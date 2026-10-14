@@ -86,7 +86,7 @@
             color: var(--text);
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 10px 12px;
             font-size: 1rem;
@@ -96,7 +96,7 @@
             color: var(--text);
         }
 
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -146,7 +146,6 @@
         .btn-secondary {
             background-color: #475569;
             color: white;
-            margin-top: 8px;
         }
 
         .tabs {
@@ -227,37 +226,21 @@
             background: #e0f2fe;
             color: #0369a1;
         }
-
-        .user-status {
-            background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Ropa Krion</h1>
-        <p>Control y Sincronización de Pedidos</p>
+        <p>Control y Sincronización de Datos</p>
     </header>
-
-    <div class="user-status" id="userStatusBox">
-        <span>👤 Sesión: <strong id="currentUserName">Sin usuario</strong></span>
-        <button onclick="switchTab('cuenta')" style="width: auto; padding: 4px 8px; font-size: 0.75rem;" class="btn-primary">Configurar</button>
-    </div>
 
     <div class="tabs">
         <button class="tab active" onclick="switchTab('pedido')">Pedido</button>
         <button class="tab" onclick="switchTab('informe')">Informe</button>
         <button class="tab" onclick="switchTab('historico')">Histórico</button>
         <button class="tab" onclick="switchTab('empleados')">Compañeros</button>
-        <button class="tab" onclick="switchTab('cuenta')">Cuenta</button>
+        <button class="tab" onclick="switchTab('cuenta')">Sincronizar</button>
     </div>
 
     <!-- SECCIÓN NUEVO PEDIDO -->
@@ -377,83 +360,37 @@
         </div>
     </div>
 
-    <!-- SECCIÓN CUENTA Y SINCRONIZACIÓN -->
+    <!-- SECCIÓN SINCRONIZACIÓN ENTRE MÓVIL Y ORDENADOR -->
     <div id="tab-cuenta" class="tab-content">
         <div class="card">
-            <h2>🔐 Usuario y Sincronización</h2>
-            <p style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 12px;">
-                Crea un nombre de usuario y contraseña. Al guardarlo en el móvil y meterlo en el ordenador, se sincronizarán todos tus datos automáticamente en la nube.
+            <h2>🔄 Sincronizar Móvil y PC</h2>
+            <p style="font-size: 0.82rem; color: var(--text-light); margin-bottom: 12px;">
+                Para pasar tus datos del móvil al ordenador (o viceversa):
             </p>
+            
             <div class="form-group">
-                <label for="inputUser">Usuario</label>
-                <input type="text" id="inputUser" placeholder="Ej. basilio">
+                <label>1. Copiar datos del dispositivo actual:</label>
+                <button onclick="generateBackupCode()" class="btn-secondary" style="font-size: 0.9rem;">Generar Código de Datos</button>
             </div>
-            <div class="form-group">
-                <label for="inputPass">Contraseña</label>
-                <input type="password" id="inputPass" placeholder="Tu contraseña">
+
+            <div class="form-group" style="margin-top: 12px;">
+                <label for="backupDataInput">Código / Texto de Datos:</label>
+                <textarea id="backupDataInput" rows="4" placeholder="Pega aquí el código generado para importar los datos..."></textarea>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button onclick="saveUserCredentials()" class="btn-primary">Guardar / Conectar</button>
-                <button onclick="syncFromCloud()" class="btn-success">Sincronizar Datos</button>
-            </div>
+
+            <button onclick="importBackupCode()" class="btn-success" style="margin-top: 8px;">Cargar Datos en este Dispositivo</button>
         </div>
     </div>
 
     <script>
-        let currentUser = localStorage.getItem('krion_user') || '';
-        let currentPass = localStorage.getItem('krion_pass') || '';
-        
         let employees = JSON.parse(localStorage.getItem('krion_employees')) || [];
         let currentOrders = JSON.parse(localStorage.getItem('krion_current_orders')) || [];
         let historyOrders = JSON.parse(localStorage.getItem('krion_history_orders')) || [];
-
-        // Inicializar datos de usuario en pantalla
-        if(currentUser) {
-            document.getElementById('inputUser').value = currentUser;
-            document.getElementById('currentUserName').innerText = currentUser;
-        }
 
         function saveAllLocally() {
             localStorage.setItem('krion_employees', JSON.stringify(employees));
             localStorage.setItem('krion_current_orders', JSON.stringify(currentOrders));
             localStorage.setItem('krion_history_orders', JSON.stringify(historyOrders));
-        }
-
-        // Sincronización mediante API pública gratuita basada en usuario/clave
-        async function syncToCloud() {
-            if(!currentUser) return;
-            try {
-                const data = { employees, currentOrders, historyOrders };
-                await fetch(`https://api.jsonbin.io/v3/b`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': '$2a$10$7Xv9...' // Clave interna de almacenamiento
-                    },
-                    body: JSON.stringify(data)
-                });
-            } catch(e) { console.log("Sincronización local activa"); }
-        }
-
-        function saveUserCredentials() {
-            const u = document.getElementById('inputUser').value.trim();
-            const p = document.getElementById('inputPass').value.trim();
-            if(!u || !p) return alert('Introduce usuario y contraseña.');
-            
-            currentUser = u;
-            currentPass = p;
-            localStorage.setItem('krion_user', u);
-            localStorage.setItem('krion_pass', p);
-            document.getElementById('currentUserName').innerText = u;
-            alert('¡Usuario configurado correctamente! Tus datos están listos.');
-        }
-
-        function syncFromCloud() {
-            const u = document.getElementById('inputUser').value.trim();
-            if(!u) return alert('Introduce tu usuario para sincronizar.');
-            saveUserCredentials();
-            alert('Datos sincronizados correctamente con este usuario.');
-            switchTab('pedido');
         }
 
         function switchTab(tabId) {
@@ -462,7 +399,6 @@
             
             document.getElementById('tab-' + tabId).classList.add('active');
             
-            // Activar pestaña visual correspondiente
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(t => {
                 if(t.getAttribute('onclick').includes(tabId)) t.classList.add('active');
@@ -642,6 +578,38 @@
             };
 
             html2pdf().from(element).set(opt).save();
+        }
+
+        // Funciones para sincronizar mediante código exportable
+        function generateBackupCode() {
+            const backupData = {
+                employees,
+                currentOrders,
+                historyOrders
+            };
+            const jsonString = JSON.stringify(backupData);
+            document.getElementById('backupDataInput').value = jsonString;
+            navigator.clipboard.writeText(jsonString).then(() => {
+                alert('¡Código copiado al portapapeles! Envíatelo por WhatsApp o correo al ordenador.');
+            }).catch(() => {
+                alert('Código generado en la casilla inferior. Selecciónalo y cópialo.');
+            });
+        }
+
+        function importBackupCode() {
+            const text = document.getElementById('backupDataInput').value.trim();
+            if(!text) return alert('Por favor pega el código de datos en la casilla.');
+            try {
+                const parsed = JSON.parse(text);
+                if(parsed.employees) employees = parsed.employees;
+                if(parsed.currentOrders) currentOrders = parsed.currentOrders;
+                if(parsed.historyOrders) historyOrders = parsed.historyOrders;
+                saveAllLocally();
+                alert('¡Datos importados y sincronizados con éxito!');
+                switchTab('pedido');
+            } catch(e) {
+                alert('El código introducido no es válido.');
+            }
         }
 
         updateEmployeeSelects();
