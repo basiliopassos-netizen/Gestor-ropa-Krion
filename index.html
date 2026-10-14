@@ -316,7 +316,7 @@
                 <p style="text-align: center; color: var(--text-light); padding: 20px;">No hay pedidos en curso.</p>
             </div>
             <div class="actions-bar">
-                <button onclick="exportCSV()" class="btn-success">Descargar CSV</button>
+                <button onclick="exportExcelCSV('current')" class="btn-success">Descargar para Excel (.csv)</button>
                 <button onclick="clearCurrentOrders()" class="btn-danger" style="font-size: 0.9rem;">Vaciar Actuales</button>
             </div>
         </div>
@@ -330,7 +330,7 @@
             <div id="historyList">
                 <p style="text-align: center; color: var(--text-light); padding: 20px;">Sin registros históricos aún.</p>
             </div>
-            <button onclick="exportHistoryCSV()" class="btn-secondary" style="margin-top: 12px;">Exportar Todo el Histórico</button>
+            <button onclick="exportExcelCSV('history')" class="btn-secondary" style="margin-top: 12px;">Descargar Histórico para Excel (.csv)</button>
         </div>
     </div>
 
@@ -354,7 +354,6 @@
     </div>
 
     <script>
-        // Inicializar almacenamiento local
         let employees = JSON.parse(localStorage.getItem('krion_employees')) || [];
         let currentOrders = JSON.parse(localStorage.getItem('krion_current_orders')) || [];
         let historyOrders = JSON.parse(localStorage.getItem('krion_history_orders')) || [];
@@ -459,4 +458,84 @@
             }
 
             container.innerHTML = currentOrders.map((ord, idx) => `
-                <div
+                <div class="list-item">
+                    <div class="item-header">
+                        <span>${ord.empleado}</span>
+                        <span class="badge">${ord.unidades} ud(s)</span>
+                    </div>
+                    <div class="item-details">
+                        <strong>Sección:</strong> ${ord.seccion} | <strong>Prenda:</strong> ${ord.prenda} | <strong>Talla:</strong> ${ord.talla}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span style="font-size: 0.75rem; color: var(--text-light);">📅 ${ord.fecha}</span>
+                        <button class="btn-danger" style="width: auto; padding: 2px 8px;" onclick="removeCurrentOrder(${idx})">Borrar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeCurrentOrder(index) {
+            currentOrders.splice(index, 1);
+            saveAll();
+            renderCurrentOrders();
+        }
+
+        function clearCurrentOrders() {
+            if(confirm('¿Vaciar la lista del informe actual? (El histórico anual se conservará intacto)')) {
+                currentOrders = [];
+                saveAll();
+                renderCurrentOrders();
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if(historyOrders.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">Sin registros históricos aún.</p>';
+                return;
+            }
+
+            container.innerHTML = historyOrders.map(ord => `
+                <div class="list-item">
+                    <div class="item-header">
+                        <span>${ord.empleado}</span>
+                        <span class="badge">${ord.unidades} ud(s)</span>
+                    </div>
+                    <div class="item-details">
+                        <strong>Sección:</strong> ${ord.seccion} | <strong>Prenda:</strong> ${ord.prenda} | <strong>Talla:</strong> ${ord.talla}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 2px;">
+                        📅 ${ord.fecha}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function exportExcelCSV(type) {
+            const data = type === 'current' ? currentOrders : historyOrders;
+            const filename = type === 'current' ? 'informe_ropa_krion.csv' : 'historico_anual_krion.csv';
+
+            if(data.length === 0) return alert('No hay datos para exportar.');
+
+            // Usamos punto y coma (;) como separador para Excel en español y BOM para que reconozca tildes/eñes
+            let csvContent = "\uFEFFEmpleado;Seccion;Prenda;Talla;Unidades;Fecha\n";
+            
+            data.forEach(o => {
+                csvContent += `"${o.empleado}";"${o.seccion}";"${o.prenda}";"${o.talla}";${o.unidades};"${o.fecha}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Cargar nombres guardados al iniciar la página
+        updateEmployeeSelects();
+    </script>
+</body>
+</html>
