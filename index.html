@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ropa Krion - Control de Pedidos</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e40af;
+            --accent: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: #fff;
+            color: var(--text);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:active {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-secondary {
+            background-color: #475569;
+            color: white;
+            margin-top: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 10px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-light);
+            border: none;
+        }
+
+        .tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .list-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            gap: 4px;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .item-details {
+            color: var(--text-light);
+            font-size: 0.82rem;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Ropa Krion</h1>
+        <p>Control y Solicitud de Prendas</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('pedido')">Nuevo Pedido</button>
+        <button class="tab" onclick="switchTab('informe')">Informe Actual</button>
+        <button class="tab" onclick="switchTab('historico')">Histórico Anual</button>
+        <button class="tab" onclick="switchTab('empleados')">Compañeros</button>
+    </div>
+
+    <!-- SECCIÓN NUEVO PEDIDO -->
+    <div id="tab-pedido" class="tab-content active">
+        <div class="card">
+            <h2>📝 Registrar Solicitud</h2>
+            <form id="orderForm" onsubmit="addOrder(event)">
+                <div class="form-group">
+                    <label for="empleadoSelect">Compañero (Nombre y Apellidos)</label>
+                    <select id="empleadoSelect" required>
+                        <option value="">-- Selecciona o añade abajo --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="seccionSelect">Sección</label>
+                    <select id="seccionSelect" required>
+                        <option value="">-- Selecciona sección --</option>
+                        <option value="Línea de decoración">Línea de decoración</option>
+                        <option value="Línea de corte">Línea de corte</option>
+                        <option value="Líneas de producción">Líneas de producción</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="prendaSelect">Prenda</label>
+                    <select id="prendaSelect" required>
+                        <option value="">-- Selecciona prenda --</option>
+                        <option value="Polo manga corta">Polo manga corta</option>
+                        <option value="Polo manga larga">Polo manga larga</option>
+                        <option value="Jersey">Jersey</option>
+                        <option value="Pantalón">Pantalón</option>
+                        <option value="Chaqueta">Chaqueta</option>
+                        <option value="Botas de seguridad">Botas de seguridad</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="tallaInput">Talla</label>
+                        <select id="tallaInput" required>
+                            <option value="">-- Talla --</option>
+                            <option value="36">36</option>
+                            <option value="38">38</option>
+                            <option value="40">40</option>
+                            <option value="42">42</option>
+                            <option value="44">44</option>
+                            <option value="46">46</option>
+                            <option value="48">48</option>
+                            <option value="50">50</option>
+                            <option value="52">52</option>
+                            <option value="54">54</option>
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                            <option value="3XL">3XL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="unidadesInput">Unidades</label>
+                        <input type="number" id="unidadesInput" min="1" value="1" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Guardar Pedido</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SECCIÓN INFORME ACTUAL -->
+    <div id="tab-informe" class="tab-content">
+        <div class="card">
+            <h2>📋 Informe de Pedidos Pendientes</h2>
+            <div id="currentOrdersList">
+                <p style="text-align: center; color: var(--text-light); padding: 20px;">No hay pedidos en curso.</p>
+            </div>
+            <div class="actions-bar">
+                <button onclick="exportCSV()" class="btn-success">Descargar CSV</button>
+                <button onclick="clearCurrentOrders()" class="btn-danger" style="font-size: 0.9rem;">Vaciar Actuales</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN HISTÓRICO ANUAL -->
+    <div id="tab-historico" class="tab-content">
+        <div class="card">
+            <h2>📚 Histórico Anual de Pedidos</h2>
+            <p style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px;">Registro acumulado de todo lo solicitado a lo largo del año.</p>
+            <div id="historyList">
+                <p style="text-align: center; color: var(--text-light); padding: 20px;">Sin registros históricos aún.</p>
+            </div>
+            <button onclick="exportHistoryCSV()" class="btn-secondary" style="margin-top: 12px;">Exportar Todo el Histórico</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN GESTIÓN DE COMPAÑEROS -->
+    <div id="tab-empleados" class="tab-content">
+        <div class="card">
+            <h2>👥 Añadir Compañero</h2>
+            <div class="form-group">
+                <label for="nuevoEmpleado">Nombre y Apellidos</label>
+                <input type="text" id="nuevoEmpleado" placeholder="Ej. Juan Pérez García">
+            </div>
+            <button onclick="addEmployee()" class="btn-primary">Guardar Compañero</button>
+        </div>
+
+        <div class="card">
+            <h2>Listado de Compañeros</h2>
+            <div id="employeeList">
+                <!-- Se rellena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar almacenamiento local
+        let employees = JSON.parse(localStorage.getItem('krion_employees')) || [];
+        let currentOrders = JSON.parse(localStorage.getItem('krion_current_orders')) || [];
+        let historyOrders = JSON.parse(localStorage.getItem('krion_history_orders')) || [];
+
+        function saveAll() {
+            localStorage.setItem('krion_employees', JSON.stringify(employees));
+            localStorage.setItem('krion_current_orders', JSON.stringify(currentOrders));
+            localStorage.setItem('krion_history_orders', JSON.stringify(historyOrders));
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            if(tabId === 'informe') renderCurrentOrders();
+            if(tabId === 'historico') renderHistory();
+            if(tabId === 'empleados') renderEmployees();
+        }
+
+        function addEmployee() {
+            const input = document.getElementById('nuevoEmpleado');
+            const name = input.value.trim();
+            if(!name) return alert('Por favor introduce un nombre y apellidos.');
+            
+            if(employees.includes(name)) {
+                alert('Este compañero ya existe.');
+                return;
+            }
+
+            employees.push(name);
+            employees.sort();
+            input.value = '';
+            saveAll();
+            updateEmployeeSelects();
+            renderEmployees();
+            alert('Compañero guardado correctamente.');
+        }
+
+        function removeEmployee(index) {
+            if(confirm('¿Seguro que deseas eliminar a este compañero?')) {
+                employees.splice(index, 1);
+                saveAll();
+                updateEmployeeSelects();
+                renderEmployees();
+            }
+        }
+
+        function renderEmployees() {
+            const list = document.getElementById('employeeList');
+            if(employees.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 10px;">No hay compañeros guardados.</p>';
+                return;
+            }
+            list.innerHTML = employees.map((emp, i) => `
+                <div class="list-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                    <span>${emp}</span>
+                    <button class="btn-danger" onclick="removeEmployee(${i})">Eliminar</button>
+                </div>
+            `).join('');
+        }
+
+        function updateEmployeeSelects() {
+            const select = document.getElementById('empleadoSelect');
+            select.innerHTML = '<option value="">-- Selecciona compañero --</option>' + 
+                employees.map(emp => `<option value="${emp}">${emp}</option>`).join('');
+        }
+
+        function addOrder(e) {
+            e.preventDefault();
+            const empleado = document.getElementById('empleadoSelect').value;
+            const seccion = document.getElementById('seccionSelect').value;
+            const prenda = document.getElementById('prendaSelect').value;
+            const talla = document.getElementById('tallaInput').value;
+            const unidades = document.getElementById('unidadesInput').value;
+            
+            const fecha = new Date().toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const order = { empleado, seccion, prenda, talla, unidades, fecha };
+
+            currentOrders.push(order);
+            historyOrders.unshift(order); // Añadir al principio del histórico
+            saveAll();
+
+            alert('¡Pedido guardado y añadido al informe e histórico!');
+            document.getElementById('orderForm').reset();
+            document.getElementById('unidadesInput').value = '1';
+        }
+
+        function renderCurrentOrders() {
+            const container = document.getElementById('currentOrdersList');
+            if(currentOrders.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">No hay pedidos en curso.</p>';
+                return;
+            }
+
+            container.innerHTML = currentOrders.map((ord, idx) => `
+                <div class="list-item">
+                    <div class="item-header">
+                        <span>${ord.empleado}</span>
+                        <span class="badge">${ord.unidades} ud(s)</span>
+                    </div>
+                    <div class="item-details">
+                        <strong>Sección:</strong> ${ord.seccion} | <strong>Prenda:</strong> ${ord.prenda} | <strong>Talla:</strong> ${ord.talla}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span style="font-size: 0.75rem; color: var(--text-light);">📅 ${ord.fecha}</span>
+                        <button class="btn-danger" style="width: auto; padding: 2px 8px;" onclick="removeCurrentOrder(${idx})">Borrar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeCurrentOrder(index) {
+            currentOrders.splice(index, 1);
+            saveAll();
+            renderCurrentOrders();
+        }
+
+        function clearCurrentOrders() {
+            if(confirm('¿Vaciar la lista del informe actual? (El histórico anual se conservará intacto)')) {
+                currentOrders = [];
+                saveAll();
+                renderCurrentOrders();
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if(historyOrders.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">Sin registros históricos aún.</p>';
+                return;
+            }
+
+            container.innerHTML = historyOrders.map(ord => `
+                <div class="list-item">
+                    <div class="item-header">
+                        <span>${ord.empleado}</span>
+                        <span class="badge">${ord.unidades} ud(s)</span>
+                    </div>
+                    <div class="item-details">
+                        <strong>Sección:</strong> ${ord.seccion} | <strong>Prenda:</strong> ${ord.prenda} | <strong>Talla:</strong> ${ord.talla}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 2px;">
+                        📅 ${ord.fecha}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function exportCSV() {
+            if(currentOrders.length === 0) return alert('No hay datos para exportar.');
+            let csvContent = "data:text/csv;charset=utf-8,Empleado,Seccion,Prenda,Talla,Unidades,Fecha\n";
+            currentOrders.forEach(o => {
+                csvContent += `"${o.empleado}","${o.seccion}","${o.prenda}","${o.talla}",${o.unidades},"${o.fecha}"\n`;
+            });
+            downloadFile(csvContent, 'informe_ropa_krion.csv');
+        }
+
+        function exportHistoryCSV() {
+            if(historyOrders.length === 0) return alert('No hay histórico para exportar.');
+            let csvContent = "data:text/csv;charset=utf-8,Empleado,Seccion,Prenda,Talla,Unidades,Fecha\n";
+            historyOrders.forEach(o => {
+                csvContent += `"${o.empleado}","${o.seccion}","${o.prenda}","${o.talla}",${o.unidades},"${o.fecha}"\n`;
+            });
+            downloadFile(csvContent, 'historico_anual_krion.csv');
+        }
+
+        function downloadFile(content, filename) {
+            const encodedUri = encodeURI(content);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Cargar nombres guardados al iniciar
+        updateEmployeeSelects();
+    </script>
+</body>
+</html>
