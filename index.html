@@ -246,7 +246,7 @@
                 <div class="form-group">
                     <label for="empleadoSelect">Compañero (Nombre y Apellidos)</label>
                     <select id="empleadoSelect" required>
-                        <option value="">-- Selecciona o añade abajo --</option>
+                        <option value="">-- Selecciona un compañero --</option>
                     </select>
                 </div>
 
@@ -372,6 +372,7 @@
             document.getElementById('tab-' + tabId).classList.add('active');
             event.currentTarget.classList.add('active');
 
+            if(tabId === 'pedido') updateEmployeeSelects();
             if(tabId === 'informe') renderCurrentOrders();
             if(tabId === 'historico') renderHistory();
             if(tabId === 'empleados') renderEmployees();
@@ -442,7 +443,7 @@
             const order = { empleado, seccion, prenda, talla, unidades, fecha };
 
             currentOrders.push(order);
-            historyOrders.unshift(order); // Añadir al principio del histórico
+            historyOrders.unshift(order);
             saveAll();
 
             alert('¡Pedido guardado y añadido al informe e histórico!');
@@ -458,89 +459,4 @@
             }
 
             container.innerHTML = currentOrders.map((ord, idx) => `
-                <div class="list-item">
-                    <div class="item-header">
-                        <span>${ord.empleado}</span>
-                        <span class="badge">${ord.unidades} ud(s)</span>
-                    </div>
-                    <div class="item-details">
-                        <strong>Sección:</strong> ${ord.seccion} | <strong>Prenda:</strong> ${ord.prenda} | <strong>Talla:</strong> ${ord.talla}
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                        <span style="font-size: 0.75rem; color: var(--text-light);">📅 ${ord.fecha}</span>
-                        <button class="btn-danger" style="width: auto; padding: 2px 8px;" onclick="removeCurrentOrder(${idx})">Borrar</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function removeCurrentOrder(index) {
-            currentOrders.splice(index, 1);
-            saveAll();
-            renderCurrentOrders();
-        }
-
-        function clearCurrentOrders() {
-            if(confirm('¿Vaciar la lista del informe actual? (El histórico anual se conservará intacto)')) {
-                currentOrders = [];
-                saveAll();
-                renderCurrentOrders();
-            }
-        }
-
-        function renderHistory() {
-            const container = document.getElementById('historyList');
-            if(historyOrders.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 20px;">Sin registros históricos aún.</p>';
-                return;
-            }
-
-            container.innerHTML = historyOrders.map(ord => `
-                <div class="list-item">
-                    <div class="item-header">
-                        <span>${ord.empleado}</span>
-                        <span class="badge">${ord.unidades} ud(s)</span>
-                    </div>
-                    <div class="item-details">
-                        <strong>Sección:</strong> ${ord.seccion} | <strong>Prenda:</strong> ${ord.prenda} | <strong>Talla:</strong> ${ord.talla}
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--text-light); margin-top: 2px;">
-                        📅 ${ord.fecha}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function exportCSV() {
-            if(currentOrders.length === 0) return alert('No hay datos para exportar.');
-            let csvContent = "data:text/csv;charset=utf-8,Empleado,Seccion,Prenda,Talla,Unidades,Fecha\n";
-            currentOrders.forEach(o => {
-                csvContent += `"${o.empleado}","${o.seccion}","${o.prenda}","${o.talla}",${o.unidades},"${o.fecha}"\n`;
-            });
-            downloadFile(csvContent, 'informe_ropa_krion.csv');
-        }
-
-        function exportHistoryCSV() {
-            if(historyOrders.length === 0) return alert('No hay histórico para exportar.');
-            let csvContent = "data:text/csv;charset=utf-8,Empleado,Seccion,Prenda,Talla,Unidades,Fecha\n";
-            historyOrders.forEach(o => {
-                csvContent += `"${o.empleado}","${o.seccion}","${o.prenda}","${o.talla}",${o.unidades},"${o.fecha}"\n`;
-            });
-            downloadFile(csvContent, 'historico_anual_krion.csv');
-        }
-
-        function downloadFile(content, filename) {
-            const encodedUri = encodeURI(content);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Cargar nombres guardados al iniciar
-        updateEmployeeSelects();
-    </script>
-</body>
-</html>
+                <div
